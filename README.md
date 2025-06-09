@@ -18,13 +18,13 @@ Add the following to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "path/to/ChildModeKit", from: "1.0.0")
+    .package(url: "https://github.com/Imja-inc/ChildModeKit", from: "1.0.0")
 ]
 ```
 
 Or add it through Xcode:
 1. File → Add Package Dependencies
-2. Enter the repository URL
+2. Enter the repository URL: `https://github.com/Imja-inc/ChildModeKit`
 3. Select the version/branch
 4. Add to your target
 
