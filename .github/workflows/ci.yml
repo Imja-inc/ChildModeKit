@@ -119,13 +119,12 @@ jobs:
       
     - name: Build Documentation
       run: |
-        swift package generate-documentation \
-          --target ChildModeKit \
-          --output-path ./docs \
-          --hosting-base-path ChildModeKit
+        xcodebuild docbuild \
+          -scheme ChildModeKit \
+          -destination generic/platform=iOS
       
     - name: Upload Documentation
       uses: actions/upload-artifact@v4
       with:
         name: documentation
-        path: docs/
+        path: ~/Library/Developer/Xcode/DerivedData/ChildModeKit-*/Build/Products/Debug-iphoneos/ChildModeKit.doccarchive
