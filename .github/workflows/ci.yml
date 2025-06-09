@@ -123,8 +123,22 @@ jobs:
           -scheme ChildModeKit \
           -destination generic/platform=iOS
       
+    - name: Create documentation archive
+      run: |
+        # Find the generated .doccarchive
+        DOCCARCHIVE=$(find ~/Library/Developer/Xcode/DerivedData -name "ChildModeKit.doccarchive" -type d | head -1)
+        if [ -n "$DOCCARCHIVE" ]; then
+          # Create a tar.gz archive to preserve structure and avoid filename issues
+          mkdir -p ./documentation
+          tar -czf ./documentation/ChildModeKit-documentation.tar.gz -C "$(dirname "$DOCCARCHIVE")" "$(basename "$DOCCARCHIVE")"
+          echo "Documentation archived successfully"
+        else
+          echo "Documentation archive not found"
+          exit 1
+        fi
+      
     - name: Upload Documentation
       uses: actions/upload-artifact@v4
       with:
         name: documentation
-        path: ~/Library/Developer/Xcode/DerivedData/ChildModeKit-*/Build/Products/Debug-iphoneos/ChildModeKit.doccarchive
+        path: ./documentation/ChildModeKit-documentation.tar.gz
