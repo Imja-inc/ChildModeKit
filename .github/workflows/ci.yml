@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: macos-latest
+    
+    strategy:
+      matrix:
+        xcode: ['15.0']
+        ios: ['17.0']
+        macos: ['14.0']
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Select Xcode
+      run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+      
+    - name: Show Xcode version
+      run: xcodebuild -version
+      
+    - name: Show Swift version
+      run: swift --version
+      
+    - name: Cache Swift Package Manager
+      uses: actions/cache@v3
+      with:
+        path: .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+    
+    - name: Build
+      run: swift build -v
+      
+    - name: Run tests
+      run: swift test -v --enable-code-coverage
+      
+    - name: Generate code coverage
+      run: |
+        xcrun llvm-cov export -format="lcov" \
+          .build/debug/ChildModeKitPackageTests.xctest/Contents/MacOS/ChildModeKitPackageTests \
+          -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.lcov
+        fail_ci_if_error: false
+
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Select Xcode
+      run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
+      
+    - name: Build for iOS Simulator
+      run: |
+        xcodebuild build \
+          -scheme ChildModeKit \
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0' \
+          -derivedDataPath .build
+      
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Select Xcode
+      run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
+      
+    - name: Build for macOS
+      run: |
+        xcodebuild build \
+          -scheme ChildModeKit \
+          -destination 'platform=macOS' \
+          -derivedDataPath .build
+
+  lint:
+    name: SwiftLint
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Install SwiftLint
+      run: brew install swiftlint
+      
+    - name: Run SwiftLint
+      run: swiftlint lint --strict
+
+  documentation:
+    name: Documentation
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Select Xcode
+      run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
+      
+    - name: Build Documentation
+      run: |
+        swift package generate-documentation \
+          --target ChildModeKit \
+          --output-path ./docs \
+          --hosting-base-path ChildModeKit
+      
+    - name: Upload Documentation
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: docs/
