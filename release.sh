@@ -178,11 +178,14 @@ update_changelog() {
     local temp_file=$(mktemp)
     
     # Process the changelog line by line
+    # Remove 'v' prefix from version for changelog format
+    local version_without_v="${version#v}"
+    
     while IFS= read -r line; do
         if [[ "$line" == "## [Unreleased]" ]]; then
             echo "## [Unreleased]"
             echo ""
-            echo "## [$version] - $date"
+            echo "## [$version_without_v] - $date"
         else
             echo "$line"
         fi
