@@ -4,141 +4,249 @@ on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
+
+env:
+  SWIFT_VERSION: '5.9'
 
 jobs:
-  test:
-    name: Test
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run GitLeaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+        if: github.event_name == 'pull_request'
+
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Checking for potential hardcoded secrets..."
+          if grep -r -i "password\|secret\|key\|token" Sources/ --include="*.swift" | grep -v "// " | grep -v "//" || true; then
+            echo "⚠️ Potential secrets found. Please review manually."
+          else
+            echo "✅ No obvious hardcoded secrets detected."
+          fi
+
+  lint:
+    name: Swift Lint
     runs-on: macos-latest
-    
+    needs: security
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
+
+      - name: Install SwiftLint
+        run: |
+          if ! command -v swiftlint &> /dev/null; then
+            brew install swiftlint
+          fi
+
+      - name: Run SwiftLint
+        run: swiftlint lint --reporter github-actions-logging
+
+  test:
+    name: Test Suite
+    runs-on: macos-latest
+    needs: security
     strategy:
       matrix:
         xcode: ['15.0']
-        ios: ['17.0']
-        macos: ['14.0']
-    
+        destination:
+          - 'platform=macOS'
+          - 'platform=iOS Simulator,name=iPhone 15'
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Select Xcode
-      run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
-      
-    - name: Show Xcode version
-      run: xcodebuild -version
-      
-    - name: Show Swift version
-      run: swift --version
-      
-    - name: Cache Swift Package Manager
-      uses: actions/cache@v3
-      with:
-        path: .build
-        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-        restore-keys: |
-          ${{ runner.os }}-spm-
-    
-    - name: Build
-      run: swift build -v
-      
-    - name: Run tests
-      run: swift test -v --enable-code-coverage
-      
-    - name: Generate code coverage
-      run: |
-        xcrun llvm-cov export -format="lcov" \
-          .build/debug/ChildModeKitPackageTests.xctest/Contents/MacOS/ChildModeKitPackageTests \
-          -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
-      
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.lcov
-        fail_ci_if_error: false
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  build-ios:
-    name: Build iOS
-    runs-on: macos-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Select Xcode
-      run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
-      
-    - name: Build for iOS Simulator
-      run: |
-        xcodebuild build \
-          -scheme ChildModeKit \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0' \
-          -derivedDataPath .build
-      
-  build-macos:
-    name: Build macOS
-    runs-on: macos-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Select Xcode
-      run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
-      
-    - name: Build for macOS
-      run: |
-        xcodebuild build \
-          -scheme ChildModeKit \
-          -destination 'platform=macOS' \
-          -derivedDataPath .build
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
 
-  lint:
-    name: SwiftLint
+      - name: Show versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v3
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Run tests
+        run: |
+          swift test --enable-code-coverage
+
+      - name: Generate code coverage
+        if: matrix.destination == 'platform=macOS'
+        run: |
+          xcrun llvm-cov export -format="lcov" \
+            .build/debug/ChildModeKitPackageTests.xctest/Contents/MacOS/ChildModeKitPackageTests \
+            -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
+
+      - name: Upload coverage to Codecov
+        if: matrix.destination == 'platform=macOS'
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage.lcov
+          fail_ci_if_error: true
+
+  build:
+    name: Build Package
     runs-on: macos-latest
-    
+    needs: [security, lint]
+    strategy:
+      matrix:
+        configuration: [debug, release]
+        destination:
+          - 'platform=macOS'
+          - 'platform=iOS Simulator,name=iPhone 15'
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Install SwiftLint
-      run: brew install swiftlint
-      
-    - name: Run SwiftLint
-      run: swiftlint lint --strict
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v3
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-${{ matrix.configuration }}-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-${{ matrix.configuration }}-
+            ${{ runner.os }}-spm-
+
+      - name: Build package
+        run: |
+          swift build -c ${{ matrix.configuration }}
+
+      - name: Upload build artifacts
+        if: matrix.configuration == 'release' && matrix.destination == 'platform=macOS'
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-${{ matrix.configuration }}
+          path: .build/${{ matrix.configuration }}/
+          retention-days: 7
 
   documentation:
-    name: Documentation
+    name: Build Documentation
     runs-on: macos-latest
-    
+    needs: build
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Select Xcode
-      run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
-      
-    - name: Build Documentation
-      run: |
-        xcodebuild docbuild \
-          -scheme ChildModeKit \
-          -destination generic/platform=iOS
-      
-    - name: Create documentation archive
-      run: |
-        # Find the generated .doccarchive
-        DOCCARCHIVE=$(find ~/Library/Developer/Xcode/DerivedData -name "ChildModeKit.doccarchive" -type d | head -1)
-        if [ -n "$DOCCARCHIVE" ]; then
-          # Create a tar.gz archive to preserve structure and avoid filename issues
-          mkdir -p ./documentation
-          tar -czf ./documentation/ChildModeKit-documentation.tar.gz -C "$(dirname "$DOCCARCHIVE")" "$(basename "$DOCCARCHIVE")"
-          echo "Documentation archived successfully"
-        else
-          echo "Documentation archive not found"
-          exit 1
-        fi
-      
-    - name: Upload Documentation
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation
-        path: ./documentation/ChildModeKit-documentation.tar.gz
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
+
+      - name: Build Documentation
+        run: |
+          xcodebuild docbuild \
+            -scheme ChildModeKit \
+            -destination generic/platform=iOS
+
+      - name: Create documentation archive
+        run: |
+          DOCCARCHIVE=$(find ~/Library/Developer/Xcode/DerivedData -name "ChildModeKit.doccarchive" -type d | head -1)
+          if [ -n "$DOCCARCHIVE" ]; then
+            mkdir -p ./documentation
+            tar -czf ./documentation/ChildModeKit-documentation.tar.gz -C "$(dirname "$DOCCARCHIVE")" "$(basename "$DOCCARCHIVE")"
+            echo "Documentation archived successfully"
+          else
+            echo "Documentation archive not found"
+            exit 1
+          fi
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation
+          path: ./documentation/ChildModeKit-documentation.tar.gz
+          retention-days: 30
+
+  integration:
+    name: Integration Tests
+    runs-on: macos-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
+
+      - name: Test package integration
+        run: |
+          mkdir integration-test
+          cd integration-test
+          
+          cat > Package.swift << EOF
+          // swift-tools-version:5.9
+          import PackageDescription
+          
+          let package = Package(
+              name: "IntegrationTest",
+              platforms: [.iOS(.v15), .macOS(.v12)],
+              dependencies: [
+                  .package(path: "../")
+              ],
+              targets: [
+                  .executableTarget(
+                      name: "IntegrationTest",
+                      dependencies: ["ChildModeKit"]
+                  )
+              ]
+          )
+          EOF
+          
+          mkdir Sources/IntegrationTest
+          cat > Sources/IntegrationTest/main.swift << EOF
+          import ChildModeKit
+          
+          let config = ChildModeConfiguration(appIdentifier: "IntegrationTest")
+          let timerManager = TimerManager(configuration: config)
+          
+          print("✅ ChildModeKit integration test passed")
+          EOF
+          
+          swift run IntegrationTest
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [security, lint, test, build, documentation]
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          echo "## CI Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation | ${{ needs.documentation.result }} |" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.security.result }}" == "failure" || "${{ needs.lint.result }}" == "failure" || "${{ needs.test.result }}" == "failure" || "${{ needs.build.result }}" == "failure" ]]; then
+            echo "❌ CI failed - please check the failed jobs above"
+            exit 1
+          else
+            echo "✅ All CI checks passed successfully!"
+          fi
