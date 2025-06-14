@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-public class ChildModeConfiguration: ObservableObject {
+open class ChildModeConfiguration: ObservableObject {
     @Published public var isChildMode: Bool {
         didSet {
             UserDefaults.standard.set(isChildMode, forKey: storageKey("isChildMode"))
