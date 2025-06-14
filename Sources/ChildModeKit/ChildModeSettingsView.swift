@@ -84,7 +84,25 @@ public struct ChildModeSettingsView: View {
                 
                 Toggle("Enable Audio Recording", isOn: $configuration.enableAudioRecording)
                     .tint(.blue)
+                
+                videoContentSection
             }
+        }
+    }
+    
+    private var videoContentSection: some View {
+        Group {
+            Toggle("Restrict to Approved Content", isOn: $configuration.restrictToApprovedContent)
+                .tint(.red)
+            
+            Toggle("Allow File Sharing", isOn: $configuration.allowFileSharing)
+                .tint(.orange)
+            
+            Toggle("Allow NFC Sharing", isOn: $configuration.allowNFCSharing)
+                .tint(.purple)
+            
+            Toggle("Allow AirDrop Receiving", isOn: $configuration.allowAirDropReceiving)
+                .tint(.green)
         }
     }
     
