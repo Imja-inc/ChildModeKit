@@ -54,8 +54,9 @@ extension VideoContentProtocol {
             // This should be handled by the implementing type
             return false
         }
-        set {
+        set(newValue) {
             // This should be handled by the implementing type
+            _ = newValue
         }
     }
 }
