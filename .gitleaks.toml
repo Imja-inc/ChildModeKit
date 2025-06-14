@@ -1,0 +1,84 @@
+# GitLeaks configuration for ChildModeKit
+# This configuration scans for secrets and sensitive information
+
+title = "ChildModeKit Security Scan"
+
+[extend]
+# Use the default gitleaks configuration as a base
+useDefault = true
+
+# Additional rules specific to Swift/iOS development
+[[rules]]
+id = "ios-provisioning-profile"
+description = "iOS Provisioning Profile"
+regex = '''-----BEGIN CERTIFICATE-----'''
+tags = ["certificate", "ios"]
+severity = "medium"
+
+[[rules]]
+id = "keychain-access-group"
+description = "Keychain Access Group Identifier"
+regex = '''[A-Z0-9]{10}\.[a-zA-Z0-9.-]+'''
+tags = ["keychain", "ios"]
+severity = "low"
+
+[[rules]]
+id = "app-store-connect-key"
+description = "App Store Connect API Key"
+regex = '''[A-Z0-9]{10}'''
+tags = ["appstore", "api-key"]
+severity = "high"
+
+[[rules]]
+id = "swift-hardcoded-password"
+description = "Hardcoded password in Swift"
+regex = '''(?i)(password|passwd|pwd)\s*=\s*["'][^"']{8,}["']'''
+tags = ["password", "swift"]
+severity = "high"
+
+[[rules]]
+id = "swift-api-key"
+description = "API Key in Swift code"
+regex = '''(?i)(api[_-]?key|apikey)\s*=\s*["'][a-zA-Z0-9]{20,}["']'''
+tags = ["api-key", "swift"]
+severity = "high"
+
+# Allowlist for false positives
+[allowlist]
+description = "Allowlist for ChildModeKit"
+files = [
+    '''CHANGELOG\.md''',
+    '''README\.md''',
+    '''\.github/.*''',
+    '''Tests/.*''',
+    '''Examples/.*'''
+]
+
+regexes = [
+    '''example.*password''',
+    '''test.*secret''',
+    '''demo.*key''',
+    '''placeholder.*token''',
+    '''dummy.*password''',
+    '''sample.*api.*key''',
+    '''// .* (password|secret|key|token)''',
+    '''/// .* (password|secret|key|token)''',
+    '''\* .* (password|secret|key|token)''',
+    '''@param .* (password|secret|key|token)''',
+    '''UserDefaults\.standard\.(string|bool|integer).*forKey:.*".*_(password|secret|key|token)"''',
+    '''storageKey\(".*"\)''',
+    '''keyPrefix \+ ".*"''',
+]
+
+# Paths to exclude entirely
+paths = [
+    '''.git/''',
+    '''.build/''',
+    '''DerivedData/''',
+    '''Pods/''',
+    '''Carthage/''',
+    '''fastlane/''',
+    '''.swiftpm/''',
+    '''*.xcworkspace/''',
+    '''*.xcodeproj/''',
+]

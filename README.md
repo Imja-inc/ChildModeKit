@@ -659,6 +659,54 @@ ChildModeKit uses UserDefaults for persistence with app-specific prefixes to avo
 
 This isolation ensures multiple apps using ChildModeKit won't interfere with each other's settings.
 
+## Development
+
+### Distance-Based Versioning
+
+ChildModeKit uses an automated distance-based versioning system:
+
+- **Format**: `vMAJOR.MINOR.PATCH` where `PATCH = last_patch + commits_since_last_tag`
+- **Example**: If the last tag was `v1.0.4` and there are 3 new commits, the next version becomes `v1.0.7`
+- **Benefits**: No version conflicts, automatic patch increments, full audit trail
+
+### Development Commands
+
+```bash
+# Set up development environment
+make dev-setup
+
+# Run all quality checks
+make check
+
+# Create a release (local)
+make release
+
+# Create and push a release
+make release-push
+
+# View version information
+./scripts/version.sh info
+```
+
+### CI/CD Pipeline
+
+The project includes a comprehensive CI/CD pipeline with:
+
+- **Security-First Approach**: GitLeaks scanning, dependency review, secret detection
+- **Multi-Platform Testing**: macOS and iOS Simulator testing
+- **Quality Gates**: SwiftLint, code coverage, integration tests
+- **Automated Releases**: Tag-triggered releases with signed assets
+- **Documentation**: Automatic documentation generation and archiving
+
+### Release Process
+
+1. **Make Changes**: Develop features on feature branches
+2. **Update CHANGELOG**: Add entries to `[Unreleased]` section
+3. **Merge to Main**: Merge PR to main branch
+4. **Create Release**: Run `make release-push` for automatic versioning
+5. **CI Triggers**: Tag push triggers automated release pipeline
+6. **GitHub Release**: Automatically created with documentation and assets
+
 ## License
 
 MIT License - see LICENSE file for details.
