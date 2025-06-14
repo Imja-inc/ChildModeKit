@@ -56,6 +56,38 @@ public class ChildModeConfiguration: ObservableObject {
         }
     }
     
+    @Published public var allowedVideoContent: Set<String> {
+        didSet {
+            if let data = try? JSONEncoder().encode(allowedVideoContent) {
+                UserDefaults.standard.set(data, forKey: storageKey("allowedVideoContent"))
+            }
+        }
+    }
+    
+    @Published public var restrictToApprovedContent: Bool {
+        didSet {
+            UserDefaults.standard.set(restrictToApprovedContent, forKey: storageKey("restrictToApprovedContent"))
+        }
+    }
+    
+    @Published public var allowFileSharing: Bool {
+        didSet {
+            UserDefaults.standard.set(allowFileSharing, forKey: storageKey("allowFileSharing"))
+        }
+    }
+    
+    @Published public var allowNFCSharing: Bool {
+        didSet {
+            UserDefaults.standard.set(allowNFCSharing, forKey: storageKey("allowNFCSharing"))
+        }
+    }
+    
+    @Published public var allowAirDropReceiving: Bool {
+        didSet {
+            UserDefaults.standard.set(allowAirDropReceiving, forKey: storageKey("allowAirDropReceiving"))
+        }
+    }
+    
     private let appIdentifier: String
     
     public init(appIdentifier: String = "DefaultApp") {
@@ -72,6 +104,18 @@ public class ChildModeConfiguration: ObservableObject {
         self.autoStartRecording = UserDefaults.standard.bool(forKey: keyPrefix + "autoStartRecording")
         self.allowStopRecording = UserDefaults.standard.object(forKey: keyPrefix + "allowStopRecording") as? Bool ?? true
         
+        // Video app specific settings
+        if let data = UserDefaults.standard.data(forKey: keyPrefix + "allowedVideoContent"),
+           let videos = try? JSONDecoder().decode(Set<String>.self, from: data) {
+            self.allowedVideoContent = videos
+        } else {
+            self.allowedVideoContent = Set<String>()
+        }
+        self.restrictToApprovedContent = UserDefaults.standard.object(forKey: keyPrefix + "restrictToApprovedContent") as? Bool ?? true
+        self.allowFileSharing = UserDefaults.standard.object(forKey: keyPrefix + "allowFileSharing") as? Bool ?? false
+        self.allowNFCSharing = UserDefaults.standard.object(forKey: keyPrefix + "allowNFCSharing") as? Bool ?? false
+        self.allowAirDropReceiving = UserDefaults.standard.object(forKey: keyPrefix + "allowAirDropReceiving") as? Bool ?? false
+        
         if timeLimitSeconds == 0 {
             timeLimitSeconds = 600
         }
@@ -79,6 +123,33 @@ public class ChildModeConfiguration: ObservableObject {
     
     public func isValidPasscode(_ passcode: String) -> Bool {
         return !parentalPasscode.isEmpty && passcode == parentalPasscode
+    }
+    
+    public func approveVideoContent(_ videoId: String) {
+        allowedVideoContent.insert(videoId)
+    }
+    
+    public func removeVideoApproval(_ videoId: String) {
+        allowedVideoContent.remove(videoId)
+    }
+    
+    public func isVideoContentAllowed(_ videoId: String) -> Bool {
+        if !restrictToApprovedContent {
+            return true
+        }
+        return allowedVideoContent.contains(videoId)
+    }
+    
+    public func canReceiveFiles() -> Bool {
+        return !isChildMode || allowFileSharing
+    }
+    
+    public func canUseNFC() -> Bool {
+        return !isChildMode || allowNFCSharing
+    }
+    
+    public func canReceiveAirDrop() -> Bool {
+        return !isChildMode || allowAirDropReceiving
     }
     
     private func storageKey(_ key: String) -> String {
