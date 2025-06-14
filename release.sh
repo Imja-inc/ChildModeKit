@@ -174,9 +174,22 @@ update_changelog() {
     # Create backup
     cp "$CHANGELOG_FILE" "${CHANGELOG_FILE}.backup"
     
-    # Update changelog
-    sed -i.tmp "s/## \[Unreleased\]/## [Unreleased]\n\n## [$version] - $date/" "$CHANGELOG_FILE"
-    rm "${CHANGELOG_FILE}.tmp" 2>/dev/null || true
+    # Create a temporary file with the new content
+    local temp_file=$(mktemp)
+    
+    # Process the changelog line by line
+    while IFS= read -r line; do
+        if [[ "$line" == "## [Unreleased]" ]]; then
+            echo "## [Unreleased]"
+            echo ""
+            echo "## [$version] - $date"
+        else
+            echo "$line"
+        fi
+    done < "$CHANGELOG_FILE" > "$temp_file"
+    
+    # Replace the original file
+    mv "$temp_file" "$CHANGELOG_FILE"
     
     log_success "CHANGELOG.md updated"
 }
