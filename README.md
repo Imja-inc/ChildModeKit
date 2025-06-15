@@ -1,5 +1,12 @@
 # ChildModeKit
 
+[![CI](https://github.com/Imja-inc/ChildModeKit/actions/workflows/ci.yml/badge.svg)](https://github.com/Imja-inc/ChildModeKit/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Imja-inc/ChildModeKit/graph/badge.svg?token=HVOED7U6E6)](https://codecov.io/gh/Imja-inc/ChildModeKit)
+[![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
+[![Platforms](https://img.shields.io/badge/Platforms-iOS%2017.0+%20|%20macOS%2014.0+-blue.svg)](https://github.com/Imja-inc/ChildModeKit)
+[![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)](https://swift.org/package-manager)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A comprehensive Swift Package for implementing parental controls and child-safe modes in iOS/macOS applications, with specialized support for camera and video apps.
 
 ## Features
