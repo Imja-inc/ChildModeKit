@@ -67,7 +67,7 @@ jobs:
         xcode: ['15.0']
         destination:
           - 'platform=macOS'
-          - 'platform=iOS Simulator,name=iPhone 15'
+          - 'platform=iOS Simulator,name=iPhone 15,OS=17.0'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
           swift --version
 
       - name: Cache Swift Package Manager
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .build
           key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.destination == 'platform=macOS'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: coverage.lcov
           fail_ci_if_error: true
@@ -124,7 +124,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
 
       - name: Cache Swift Package Manager
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .build
           key: ${{ runner.os }}-spm-${{ matrix.configuration }}-${{ hashFiles('Package.resolved') }}

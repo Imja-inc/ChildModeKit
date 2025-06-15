@@ -8,7 +8,9 @@ final class VideoContentManagerTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        configuration = ChildModeConfiguration(appIdentifier: "VideoContentTestApp")
+        // Use unique app identifier for each test run to avoid UserDefaults conflicts
+        let uniqueAppId = "VideoContentTestApp_\(UUID().uuidString)"
+        configuration = ChildModeConfiguration(appIdentifier: uniqueAppId)
         contentManager = VideoContentManager(configuration: configuration)
     }
     
@@ -191,6 +193,9 @@ final class VideoContentManagerTests: XCTestCase {
     }
     
     func testToggleVideoApprovalWithMultipleVideos() {
+        // Clean up any existing approvals first
+        configuration.allowedVideoContent.removeAll()
+        
         // Must be in parent mode to modify approval status
         configuration.isChildMode = false
         
