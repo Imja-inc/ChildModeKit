@@ -1,5 +1,12 @@
 # ChildModeKit
 
+[![CI](https://github.com/Imja-inc/ChildModeKit/actions/workflows/ci.yml/badge.svg)](https://github.com/Imja-inc/ChildModeKit/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Imja-inc/ChildModeKit/graph/badge.svg?token=HVOED7U6E6)](https://codecov.io/gh/Imja-inc/ChildModeKit)
+[![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
+[![Platforms](https://img.shields.io/badge/Platforms-iOS%2017.0+%20|%20macOS%2014.0+-blue.svg)](https://github.com/Imja-inc/ChildModeKit)
+[![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)](https://swift.org/package-manager)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A comprehensive Swift Package for implementing parental controls and child-safe modes in iOS/macOS applications, with specialized support for camera and video apps.
 
 ## Features
@@ -678,6 +685,9 @@ make dev-setup
 # Run all quality checks
 make check
 
+# Run integration tests
+make integration-test
+
 # Create a release (local)
 make release
 
@@ -687,6 +697,17 @@ make release-push
 # View version information
 ./scripts/version.sh info
 ```
+
+### Integration Testing
+
+The `make integration-test` command creates a temporary Swift package that imports ChildModeKit as a local dependency to verify:
+
+- ✅ Package can be imported correctly as an external dependency
+- ✅ Core classes (`ChildModeConfiguration`, `TimerManager`) can be instantiated
+- ✅ Platform requirements (iOS 17.0+, macOS 14.0+) are satisfied
+- ✅ No build or runtime errors occur
+
+This test runs both locally and in CI to ensure ChildModeKit works properly when consumed by other Swift packages.
 
 ### CI/CD Pipeline
 
