@@ -170,35 +170,30 @@ coverage: ## Generate and open code coverage report
 integration-test: ## Run integration tests
 	@echo "🔗 Running integration tests..."
 	@mkdir -p .tmp/integration-test
-	@cd .tmp/integration-test && \
-	cat > Package.swift << 'EOF' && \
-	// swift-tools-version:5.9\
-	import PackageDescription\
-	\
-	let package = Package(\
-	    name: "IntegrationTest",\
-	    platforms: [.iOS(.v15), .macOS(.v12)],\
-	    dependencies: [\
-	        .package(path: "../../")\
-	    ],\
-	    targets: [\
-	        .executableTarget(\
-	            name: "IntegrationTest",\
-	            dependencies: ["ChildModeKit"]\
-	        )\
-	    ]\
-	)\
-	EOF\
-	mkdir -p Sources/IntegrationTest && \
-	cat > Sources/IntegrationTest/main.swift << 'EOF' && \
-	import ChildModeKit\
-	\
-	let config = ChildModeConfiguration(appIdentifier: "IntegrationTest")\
-	let timerManager = TimerManager(configuration: config)\
-	\
-	print("✅ ChildModeKit integration test passed")\
-	EOF\
-	swift run IntegrationTest
+	@echo "// swift-tools-version:5.9" > .tmp/integration-test/Package.swift
+	@echo "import PackageDescription" >> .tmp/integration-test/Package.swift
+	@echo "" >> .tmp/integration-test/Package.swift
+	@echo "let package = Package(" >> .tmp/integration-test/Package.swift
+	@echo "    name: \"IntegrationTest\"," >> .tmp/integration-test/Package.swift
+	@echo "    platforms: [.iOS(.v17), .macOS(.v14)]," >> .tmp/integration-test/Package.swift
+	@echo "    dependencies: [" >> .tmp/integration-test/Package.swift
+	@echo "        .package(path: \"../../\")" >> .tmp/integration-test/Package.swift
+	@echo "    ]," >> .tmp/integration-test/Package.swift
+	@echo "    targets: [" >> .tmp/integration-test/Package.swift
+	@echo "        .executableTarget(" >> .tmp/integration-test/Package.swift
+	@echo "            name: \"IntegrationTest\"," >> .tmp/integration-test/Package.swift
+	@echo "            dependencies: [\"ChildModeKit\"]" >> .tmp/integration-test/Package.swift
+	@echo "        )" >> .tmp/integration-test/Package.swift
+	@echo "    ]" >> .tmp/integration-test/Package.swift
+	@echo ")" >> .tmp/integration-test/Package.swift
+	@mkdir -p .tmp/integration-test/Sources/IntegrationTest
+	@echo "import ChildModeKit" > .tmp/integration-test/Sources/IntegrationTest/main.swift
+	@echo "" >> .tmp/integration-test/Sources/IntegrationTest/main.swift
+	@echo "let config = ChildModeConfiguration(appIdentifier: \"IntegrationTest\")" >> .tmp/integration-test/Sources/IntegrationTest/main.swift
+	@echo "let timerManager = TimerManager(configuration: config)" >> .tmp/integration-test/Sources/IntegrationTest/main.swift
+	@echo "" >> .tmp/integration-test/Sources/IntegrationTest/main.swift
+	@echo "print(\"✅ ChildModeKit integration test passed\")" >> .tmp/integration-test/Sources/IntegrationTest/main.swift
+	@cd .tmp/integration-test && swift run IntegrationTest
 	@rm -rf .tmp/integration-test
 	@echo "✅ Integration test completed!"
 
