@@ -1,7 +1,10 @@
 import Foundation
 import SwiftUI
 
+/// ChildModeConfiguration is intentionally open to allow external inheritance
+/// External libraries should be able to extend this class for custom functionality
 open class ChildModeConfiguration: ObservableObject {
+    /// Public properties are intentionally mutable for external library configuration
     @Published public var isChildMode: Bool {
         didSet {
             UserDefaults.standard.set(isChildMode, forKey: storageKey("isChildMode"))
@@ -58,9 +61,7 @@ open class ChildModeConfiguration: ObservableObject {
     
     @Published public var allowedVideoContent: Set<String> {
         didSet {
-            if let data = try? JSONEncoder().encode(allowedVideoContent) {
-                UserDefaults.standard.set(data, forKey: storageKey("allowedVideoContent"))
-            }
+            saveVideoContentToUserDefaults()
         }
     }
     
@@ -105,9 +106,14 @@ open class ChildModeConfiguration: ObservableObject {
         self.allowStopRecording = UserDefaults.standard.object(forKey: keyPrefix + "allowStopRecording") as? Bool ?? true
         
         // Video app specific settings
-        if let data = UserDefaults.standard.data(forKey: keyPrefix + "allowedVideoContent"),
-           let videos = try? JSONDecoder().decode(Set<String>.self, from: data) {
-            self.allowedVideoContent = videos
+        if let data = UserDefaults.standard.data(forKey: keyPrefix + "allowedVideoContent") {
+            do {
+                self.allowedVideoContent = try JSONDecoder().decode(Set<String>.self, from: data)
+            } catch {
+                print("ChildModeKit: Failed to decode video content during init - \(error.localizedDescription)")
+                UserDefaults.standard.removeObject(forKey: keyPrefix + "allowedVideoContent")
+                self.allowedVideoContent = Set<String>()
+            }
         } else {
             self.allowedVideoContent = Set<String>()
         }
@@ -155,4 +161,19 @@ open class ChildModeConfiguration: ObservableObject {
     private func storageKey(_ key: String) -> String {
         return "\(appIdentifier)_\(key)"
     }
+    
+    // MARK: - JSON Handling
+    
+    /// Safely saves video content to UserDefaults with proper error handling
+    private func saveVideoContentToUserDefaults() {
+        do {
+            let data = try JSONEncoder().encode(allowedVideoContent)
+            UserDefaults.standard.set(data, forKey: storageKey("allowedVideoContent"))
+        } catch {
+            print("ChildModeKit: Failed to encode video content - \(error.localizedDescription)")
+            // Fallback: clear the corrupted data
+            UserDefaults.standard.removeObject(forKey: storageKey("allowedVideoContent"))
+        }
+    }
+    
 }
