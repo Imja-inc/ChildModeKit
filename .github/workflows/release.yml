@@ -254,26 +254,17 @@ jobs:
           echo "Release notes generated"
 
       - name: Create Release
-        uses: actions/create-release@v1
-        id: create_release
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ needs.validate.outputs.version }}
-          release_name: ChildModeKit ${{ needs.validate.outputs.version }}
+          name: ChildModeKit ${{ needs.validate.outputs.version }}
           body_path: release_notes.md
           draft: false
           prerelease: ${{ needs.validate.outputs.is_prerelease }}
-
-      - name: Upload Documentation Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-assets/ChildModeKit-${{ needs.validate.outputs.version }}-documentation.tar.gz
-          asset_name: ChildModeKit-${{ needs.validate.outputs.version }}-documentation.tar.gz
-          asset_content_type: application/gzip
+          files: |
+            ./release-assets/ChildModeKit-${{ needs.validate.outputs.version }}-documentation.tar.gz
 
   notify:
     name: Release Notification
