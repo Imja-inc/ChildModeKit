@@ -36,6 +36,7 @@ public class TimerManager: ObservableObject {
     }
     
     public func addTime(seconds: Int) {
+        guard seconds > 0 else { return }
         timeRemaining += TimeInterval(seconds)
         if isTimeLimitReached {
             isTimeLimitReached = false

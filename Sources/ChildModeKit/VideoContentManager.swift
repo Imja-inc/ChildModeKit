@@ -30,13 +30,15 @@ public class VideoContentManager: ObservableObject {
         return !configuration.isChildMode
     }
     
-    public func toggleVideoApproval<T: VideoContentProtocol>(_ video: T) {
+    public func toggleVideoApproval<T: VideoContentProtocol>(_ video: inout T) {
         guard canModifyApprovalStatus() else { return }
         
         if configuration.isVideoContentAllowed(video.videoId) {
             configuration.removeVideoApproval(video.videoId)
+            video.isApproved = false
         } else {
             configuration.approveVideoContent(video.videoId)
+            video.isApproved = true
         }
     }
 }

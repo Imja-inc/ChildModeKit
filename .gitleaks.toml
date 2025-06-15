@@ -79,6 +79,6 @@ paths = [
     '''Carthage/''',
     '''fastlane/''',
     '''.swiftpm/''',
-    '''*.xcworkspace/''',
-    '''*.xcodeproj/''',
+    '''.*\.xcworkspace/''',
+    '''.*\.xcodeproj/''',
 ]
