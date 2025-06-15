@@ -217,7 +217,7 @@ jobs:
           )
           EOF
           
-          mkdir Sources/IntegrationTest
+          mkdir -p Sources/IntegrationTest
           cat > Sources/IntegrationTest/main.swift << EOF
           import ChildModeKit
           
