@@ -678,6 +678,9 @@ make dev-setup
 # Run all quality checks
 make check
 
+# Run integration tests
+make integration-test
+
 # Create a release (local)
 make release
 
@@ -687,6 +690,17 @@ make release-push
 # View version information
 ./scripts/version.sh info
 ```
+
+### Integration Testing
+
+The `make integration-test` command creates a temporary Swift package that imports ChildModeKit as a local dependency to verify:
+
+- ✅ Package can be imported correctly as an external dependency
+- ✅ Core classes (`ChildModeConfiguration`, `TimerManager`) can be instantiated
+- ✅ Platform requirements (iOS 17.0+, macOS 14.0+) are satisfied
+- ✅ No build or runtime errors occur
+
+This test runs both locally and in CI to ensure ChildModeKit works properly when consumed by other Swift packages.
 
 ### CI/CD Pipeline
 
