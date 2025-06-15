@@ -204,7 +204,7 @@ jobs:
           
           let package = Package(
               name: "IntegrationTest",
-              platforms: [.iOS(.v15), .macOS(.v12)],
+              platforms: [.iOS(.v17), .macOS(.v14)],
               dependencies: [
                   .package(path: "../")
               ],
