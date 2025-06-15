@@ -193,41 +193,8 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -switch /Applications/Xcode_15.0.app/Contents/Developer
 
-      - name: Test package integration
-        run: |
-          mkdir integration-test
-          cd integration-test
-          
-          cat > Package.swift << EOF
-          // swift-tools-version:5.9
-          import PackageDescription
-          
-          let package = Package(
-              name: "IntegrationTest",
-              platforms: [.iOS(.v17), .macOS(.v14)],
-              dependencies: [
-                  .package(path: "../")
-              ],
-              targets: [
-                  .executableTarget(
-                      name: "IntegrationTest",
-                      dependencies: ["ChildModeKit"]
-                  )
-              ]
-          )
-          EOF
-          
-          mkdir -p Sources/IntegrationTest
-          cat > Sources/IntegrationTest/main.swift << EOF
-          import ChildModeKit
-          
-          let config = ChildModeConfiguration(appIdentifier: "IntegrationTest")
-          let timerManager = TimerManager(configuration: config)
-          
-          print("✅ ChildModeKit integration test passed")
-          EOF
-          
-          swift run IntegrationTest
+      - name: Run integration tests
+        run: make integration-test
 
   summary:
     name: CI Summary
