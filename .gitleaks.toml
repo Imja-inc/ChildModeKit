@@ -25,7 +25,7 @@ severity = "low"
 [[rules]]
 id = "app-store-connect-key"
 description = "App Store Connect API Key"
-regex = '''[A-Z0-9]{10}'''
+regex = '''(?i)(app.?store.?connect|asc).{0,10}[A-Z0-9]{10}'''
 tags = ["appstore", "api-key"]
 severity = "high"
 
@@ -68,6 +68,12 @@ regexes = [
     '''UserDefaults\.standard\.(string|bool|integer).*forKey:.*".*_(password|secret|key|token)"''',
     '''storageKey\(".*"\)''',
     '''keyPrefix \+ ".*"''',
+    '''DOCCARCHIVE''',
+    '''codecov\.io/.*\?token=[A-Z0-9]+''',
+    '''badge\.svg\?token=[A-Z0-9]+''',
+    '''\$DOCCARCHIVE''',
+    '''find.*DOCCARCHIVE''',
+    '''HVOED7U6E6''',
 ]
 
 # Paths to exclude entirely

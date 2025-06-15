@@ -1,1 +1,22 @@
+# Codecov badge tokens (public tokens for badge display)
 18061b509af1c24e27698d9967358bf577c33360:README.md:app-store-connect-key:4
+e40411a26b002fd4abed7540cf0c5fe42ddfc638:README.md:app-store-connect-key:4
+
+# GitHub Actions CI workflow - DOCCARCHIVE variable false positives
+77410a26b25c94bb360ac933c30976adf3c45351:.github/workflows/ci.yml:app-store-connect-key:165
+77410a26b25c94bb360ac933c30976adf3c45351:.github/workflows/ci.yml:app-store-connect-key:166
+77410a26b25c94bb360ac933c30976adf3c45351:.github/workflows/ci.yml:app-store-connect-key:168
+ed356e3654c4a25eb7de3d30ca912095831b0926:.github/workflows/ci.yml:app-store-connect-key:165
+ed356e3654c4a25eb7de3d30ca912095831b0926:.github/workflows/ci.yml:app-store-connect-key:166
+ed356e3654c4a25eb7de3d30ca912095831b0926:.github/workflows/ci.yml:app-store-connect-key:168
+5c6df7d884c063cbcbc03586fce4aacea7fbff97:.github/workflows/ci.yml:app-store-connect-key:129
+5c6df7d884c063cbcbc03586fce4aacea7fbff97:.github/workflows/ci.yml:app-store-connect-key:130
+5c6df7d884c063cbcbc03586fce4aacea7fbff97:.github/workflows/ci.yml:app-store-connect-key:133
+
+# GitHub Actions Release workflow - DOCCARCHIVE variable false positives
+77410a26b25c94bb360ac933c30976adf3c45351:.github/workflows/release.yml:app-store-connect-key:145
+77410a26b25c94bb360ac933c30976adf3c45351:.github/workflows/release.yml:app-store-connect-key:146
+77410a26b25c94bb360ac933c30976adf3c45351:.github/workflows/release.yml:app-store-connect-key:148
+ed356e3654c4a25eb7de3d30ca912095831b0926:.github/workflows/release.yml:app-store-connect-key:145
+ed356e3654c4a25eb7de3d30ca912095831b0926:.github/workflows/release.yml:app-store-connect-key:146
+ed356e3654c4a25eb7de3d30ca912095831b0926:.github/workflows/release.yml:app-store-connect-key:148
