@@ -103,7 +103,7 @@ jobs:
         if: matrix.destination == 'platform=macOS'
         uses: codecov/codecov-action@v4
         with:
-          file: coverage.lcov
+          files: coverage.lcov
           fail_ci_if_error: true
 
   build:
